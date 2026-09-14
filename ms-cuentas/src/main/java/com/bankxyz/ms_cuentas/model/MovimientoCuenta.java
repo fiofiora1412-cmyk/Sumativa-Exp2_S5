@@ -1,0 +1,65 @@
+package com.bankxyz.ms_cuentas.model;
+
+import java.math.BigDecimal;
+import java.time.LocalDate;
+
+public class MovimientoCuenta {
+
+    private Integer cuentaId;
+    private LocalDate fecha;
+    private String transaccion;
+    private BigDecimal monto;
+    private String descripcion;
+
+    public MovimientoCuenta() {
+    }
+
+    public MovimientoCuenta(Integer cuentaId, LocalDate fecha, String transaccion,
+                            BigDecimal monto, String descripcion) {
+        this.cuentaId = cuentaId;
+        this.fecha = fecha;
+        this.transaccion = transaccion;
+        this.monto = monto;
+        this.descripcion = descripcion;
+    }
+
+    public Integer getCuentaId() {
+        return cuentaId;
+    }
+
+    public void setCuentaId(Integer cuentaId) {
+        this.cuentaId = cuentaId;
+    }
+
+    public LocalDate getFecha() {
+        return fecha;
+    }
+
+    public void setFecha(LocalDate fecha) {
+        this.fecha = fecha;
+    }
+
+    public String getTransaccion() {
+        return transaccion;
+    }
+
+    public void setTransaccion(String transaccion) {
+        this.transaccion = transaccion;
+    }
+
+    public BigDecimal getMonto() {
+        return monto;
+    }
+
+    public void setMonto(BigDecimal monto) {
+        this.monto = monto;
+    }
+
+    public String getDescripcion() {
+        return descripcion;
+    }
+
+    public void setDescripcion(String descripcion) {
+        this.descripcion = descripcion;
+    }
+}
