@@ -6,6 +6,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.PostMapping;
 
 import com.bankxyz.bff_web.dto.CuentaWebDTO;
 import com.bankxyz.bff_web.dto.MovimientoWebDTO;
@@ -25,6 +26,11 @@ public class WebController {
     @GetMapping("/transacciones")
     public List<Object> obtenerTransacciones() {
         return webService.obtenerTransacciones();
+    }
+
+    @PostMapping("/transacciones/{id}/publicar-evento")
+    public void publicarEvento(@PathVariable Integer id) {
+        webService.publicarEvento(id);
     }
 
     @GetMapping("/cuentas/{cuentaId}")

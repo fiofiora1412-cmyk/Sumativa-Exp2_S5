@@ -8,22 +8,22 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.bankxyz.ms_intereses.model.Interes;
-import com.bankxyz.ms_intereses.repository.InteresRepository;
+import com.bankxyz.ms_intereses.service.InteresService;
 
 @RestController
 @RequestMapping("/api/intereses")
 public class InteresController {
 
-    private final InteresRepository interesRepository;
+    private final InteresService interesService;
 
-    public InteresController(InteresRepository interesRepository) {
-        this.interesRepository = interesRepository;
+    public InteresController(InteresService interesService) {
+        this.interesService = interesService;
     }
 
     @GetMapping("/{cuentaId}")
     public List<Interes> obtenerPorCuentaId(
             @PathVariable Integer cuentaId) {
 
-        return interesRepository.obtenerPorCuentaId(cuentaId);
+        return interesService.obtenerPorCuentaId(cuentaId);
     }
 }

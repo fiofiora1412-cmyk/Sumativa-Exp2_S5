@@ -1,0 +1,192 @@
+services:
+
+  config-server:
+    image: config-server:latest
+    container_name: config-server-s8
+    ports:
+      - "8888:8888"
+    volumes:
+      - ./config-repo:/app/config-repo
+    environment:
+      SPRING_CLOUD_CONFIG_SERVER_GIT_URI: file:///app/config-repo
+      SPRING_CLOUD_CONFIG_SERVER_GIT_DEFAULT_LABEL: main
+
+  eureka-server:
+    image: eureka-server:latest
+    container_name: eureka-server-s8
+    ports:
+      - "8761:8761"
+  
+  authorization-server:
+    image: authorization-server:latest
+    container_name: authorization-server-s8
+    ports:
+      - "9000:9000"
+
+  postgres:
+    image: postgres:17
+    container_name: postgres-s8
+    environment:
+      POSTGRES_DB: bank_batch
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: admin123
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./database/init:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d bank_batch"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  bff-web:
+    build:
+      context: ./bff-web
+      dockerfile: Dockerfile
+    image: bff-web:latest
+    container_name: bff-web-s8
+    ports:
+      - "8081:8081"
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+    depends_on:
+      - eureka-server
+      - authorization-server
+
+  ms-cuentas:
+    image: ms-cuentas:latest
+    container_name: ms-cuentas-s8
+    ports:
+      - "8092:8092"
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+      CONFIG_SERVER_URL: http://config-server:8888
+    depends_on:
+      config-server:
+        condition: service_started
+      eureka-server:
+        condition: service_started
+      authorization-server:
+        condition: service_started
+      postgres:
+        condition: service_healthy
+    
+  ms-transacciones:
+    image: ms-transacciones:latest
+    container_name: ms-transacciones-s8
+    ports:
+      - "8091:8091"
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+      CONFIG_SERVER_URL: http://config-server:8888
+    depends_on:
+      config-server:
+        condition: service_started
+      eureka-server:
+        condition: service_started
+      postgres:
+        condition: service_healthy
+
+  ms-intereses:
+    image: ms-intereses:latest
+    container_name: ms-intereses-s8
+    ports:
+      - "8093:8093"
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+      CONFIG_SERVER_URL: http://config-server:8888
+    depends_on:
+      config-server:
+        condition: service_started
+      eureka-server:
+        condition: service_started
+      postgres:
+        condition: service_healthy
+
+  kafka-1:
+    image: apache/kafka:latest
+    container_name: kafka-s8-1
+    ports:
+      - "19092:19092"
+    environment:
+      KAFKA_NODE_ID: 1
+      KAFKA_PROCESS_ROLES: broker,controller
+      KAFKA_LISTENERS: BROKER://:29092,CONTROLLER://:29093,HOST://:19092
+      KAFKA_ADVERTISED_LISTENERS: BROKER://kafka-1:29092,HOST://localhost:19092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: BROKER:PLAINTEXT,CONTROLLER:PLAINTEXT,HOST:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: BROKER
+      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@kafka-1:29093,2@kafka-2:29093,3@kafka-3:29093
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 3
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 3
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 2
+      KAFKA_DEFAULT_REPLICATION_FACTOR: 3
+      KAFKA_MIN_INSYNC_REPLICAS: 2
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+      CLUSTER_ID: MkU3OEVBNTcwNTJENDM2Qk
+    networks:
+      - kafka-s8
+      - formativas6
+
+  kafka-2:
+    image: apache/kafka:latest
+    container_name: kafka-s8-2
+    ports:
+      - "29092:39092"
+    environment:
+      KAFKA_NODE_ID: 2
+      KAFKA_PROCESS_ROLES: broker,controller
+      KAFKA_LISTENERS: BROKER://:29092,CONTROLLER://:29093,HOST://:39092
+      KAFKA_ADVERTISED_LISTENERS: BROKER://kafka-2:29092,HOST://localhost:29092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: BROKER:PLAINTEXT,CONTROLLER:PLAINTEXT,HOST:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: BROKER
+      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@kafka-1:29093,2@kafka-2:29093,3@kafka-3:29093
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 3
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 3
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 2
+      KAFKA_DEFAULT_REPLICATION_FACTOR: 3
+      KAFKA_MIN_INSYNC_REPLICAS: 2
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+      CLUSTER_ID: MkU3OEVBNTcwNTJENDM2Qk
+    networks:
+      - kafka-s8
+      - formativas6
+
+  kafka-3:
+    image: apache/kafka:latest
+    container_name: kafka-s8-3
+    ports:
+      - "39092:39092"
+    environment:
+      KAFKA_NODE_ID: 3
+      KAFKA_PROCESS_ROLES: broker,controller
+      KAFKA_LISTENERS: BROKER://:29092,CONTROLLER://:29093,HOST://:39092
+      KAFKA_ADVERTISED_LISTENERS: BROKER://kafka-3:29092,HOST://localhost:39092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: BROKER:PLAINTEXT,CONTROLLER:PLAINTEXT,HOST:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: BROKER
+      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@kafka-1:29093,2@kafka-2:29093,3@kafka-3:29093
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 3
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 3
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 2
+      KAFKA_DEFAULT_REPLICATION_FACTOR: 3
+      KAFKA_MIN_INSYNC_REPLICAS: 2
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+      CLUSTER_ID: MkU3OEVBNTcwNTJENDM2Qk
+    networks:
+      - kafka-s8
+      - formativas6
+
+
+networks:
+  kafka-s8:
+    name: kafka-s8-network
+
+  formativas6:
+    external: true
+    name: formativas6_default
+
+volumes:
+  postgres_data:
+  

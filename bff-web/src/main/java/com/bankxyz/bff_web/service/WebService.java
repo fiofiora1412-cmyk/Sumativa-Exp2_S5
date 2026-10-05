@@ -82,4 +82,8 @@ public class WebService {
                 .toList();
     }
 
+    public void publicarEvento(Integer id) {
+        transaccionClient.publicarEvento(id);
+        }
+
 }

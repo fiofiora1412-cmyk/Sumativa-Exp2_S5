@@ -1,4 +1,22 @@
+# Maven
 target/
-.vscode/
+*.jar
+
+# Spring Boot generated files
+BOOT-INF/
+META-INF/
+
+# Logs
+*.log
+
+# IDE
 .idea/
-*.class
+*.iml
+.vscode/
+
+# Sistema
+.DS_Store
+Thumbs.db
+
+# Backups
+backup/
